@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Sweet Shop</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f6fa;
+            margin: 0;
+            padding: 30px;
+        }
+
+        h2 {
+            text-align: center;
+            color: #2f3640;
+        }
+
+        .container {
+            max-width: 700px;
+            margin: auto;
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        .form-group {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        input {
+            padding: 10px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+        }
+
+        button {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-left: 5px;
+        }
+
+        .add-btn {
+            background: #44bd32;
+            color: white;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .add-btn:hover {
+            background: #4cd137;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        li {
+            background: #f1f2f6;
+            padding: 12px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .info {
+            font-size: 14px;
+        }
+
+        .buy-btn {
+            background: #0097e6;
+            color: white;
+        }
+
+        .buy-btn:disabled {
+            background: #7f8fa6;
+            cursor: not-allowed;
+        }
+
+        .del-btn {
+            background: #e84118;
+            color: white;
+        }
+
+        @media (max-width: 600px) {
+            .form-group {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<h2>🍬 Sweet Shop Management</h2>
+
+<div class="container">
+
+    <h3>Add Sweet</h3>
+
+    <div class="form-group">
+        <input id="name" placeholder="Name">
+        <input id="category" placeholder="Category">
+        <input id="price" type="number" placeholder="Price">
+        <input id="qty" type="number" placeholder="Quantity">
+    </div>
+
+    <button class="add-btn" id="addBtn">Add Sweet</button>
+
+    <hr>
+
+    <h3>Available Sweets</h3>
+    <ul id="list"></ul>
+</div>
+
+<script>
+    function loadSweets() {
+        fetch('/api/sweets')
+            .then(res => res.json())
+            .then(data => {
+                const list = document.getElementById("list");
+                list.innerHTML = "";
+
+                data.forEach(sweet => {
+                    const li = document.createElement("li");
+
+                    const info = document.createElement("div");
+                    info.className = "info";
+                    info.innerText =
+                        sweet.name + " | " +
+                        sweet.category + " | ₹" +
+                        sweet.price + " | Qty: " +
+                        sweet.quantity;
+
+                    const actions = document.createElement("div");
+
+                    const buyBtn = document.createElement("button");
+                    buyBtn.className = "buy-btn";
+                    buyBtn.innerText = "Buy";
+                    buyBtn.disabled = sweet.quantity === 0;
+                    buyBtn.onclick = () => buySweet(sweet.id);
+
+                    const delBtn = document.createElement("button");
+                    delBtn.className = "del-btn";
+                    delBtn.innerText = "Delete";
+                    delBtn.onclick = () => deleteSweet(sweet.id);
+
+                    actions.appendChild(buyBtn);
+                    actions.appendChild(delBtn);
+
+                    li.appendChild(info);
+                    li.appendChild(actions);
+                    list.appendChild(li);
+                });
+            });
+    }
+
+    function addSweet() {
+        fetch('/api/sweets', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                name: name.value,
+                category: category.value,
+                price: Number(price.value),
+                quantity: Number(qty.value)
+            })
+        }).then(() => {
+            name.value = "";
+            category.value = "";
+            price.value = "";
+            qty.value = "";
+            loadSweets();
+        });
+    }
+
+    function buySweet(id) {
+        fetch('/api/sweets/' + id + '/purchase', { method: 'POST' })
+            .then(() => loadSweets());
+    }
+
+    function deleteSweet(id) {
+        fetch('/api/sweets/' + id, { method: 'DELETE' })
+            .then(() => loadSweets());
+    }
+
+    document.getElementById("addBtn").addEventListener("click", addSweet);
+    loadSweets();
+</script>
+
+</body>
+</html>
