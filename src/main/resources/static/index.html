@@ -166,23 +166,29 @@
     }
 
     function addSweet() {
-        fetch('/api/sweets', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({
-                name: name.value,
-                category: category.value,
-                price: Number(price.value),
-                quantity: Number(qty.value)
-            })
-        }).then(() => {
-            name.value = "";
-            category.value = "";
-            price.value = "";
-            qty.value = "";
-            loadSweets();
-        });
-    }
+    const nameInput = document.getElementById("name");
+    const categoryInput = document.getElementById("category");
+    const priceInput = document.getElementById("price");
+    const qtyInput = document.getElementById("qty");
+
+    fetch('/api/sweets', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+            name: nameInput.value,
+            category: categoryInput.value,
+            price: Number(priceInput.value),
+            quantity: Number(qtyInput.value)
+        })
+    }).then(() => {
+        nameInput.value = "";
+        categoryInput.value = "";
+        priceInput.value = "";
+        qtyInput.value = "";
+        loadSweets();
+    });
+}
+
 
     function buySweet(id) {
         fetch('/api/sweets/' + id + '/purchase', { method: 'POST' })
